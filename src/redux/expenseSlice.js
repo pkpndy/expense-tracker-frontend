@@ -1,49 +1,63 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import api from "../api/api";
 import { pathForUserExpensesApis } from "../api/expenseTracker.api";
 
-// Thunks for API calls
+// Fetch all expenses
 export const fetchExpenses = createAsyncThunk(
   "expense/fetchExpenses",
-  async (filters, { getState }) => {
-    const { userId } = getState().user; // Assuming user data is stored in state
-    const response = await axios.post(pathForUserExpensesApis.getExpenses, { userId, ...filters });
+  async (filters) => {
+    const response = await api.post(pathForUserExpensesApis.getExpenses, filters);
     return response.data;
   }
 );
 
+// Add new expense
 export const addExpense = createAsyncThunk(
   "expense/addExpense",
   async (expenseData, { dispatch }) => {
-    const response = await axios.post(pathForUserExpensesApis.addExpense, expenseData);
-    dispatch(fetchExpenses()); // Reload expenses after adding
+    const response = await api.post(pathForUserExpensesApis.addExpense, expenseData);
+    dispatch(fetchExpenses()); // Refresh expenses after addition
     return response.data;
   }
 );
 
+// Update existing expense
 export const updateExpense = createAsyncThunk(
   "expense/updateExpense",
   async (expenseData, { dispatch }) => {
-    const response = await axios.patch(pathForUserExpensesApis.updateExpense, expenseData);
-    dispatch(fetchExpenses()); // Reload expenses after updating
+    const response = await api.patch(pathForUserExpensesApis.updateExpense, expenseData);
+    dispatch(fetchExpenses()); // Refresh expenses after update
     return response.data;
   }
 );
 
+// Delete an expense
 export const deleteExpense = createAsyncThunk(
   "expense/deleteExpense",
-  async (id, { dispatch }) => {
-    await axios.delete(pathForUserExpensesApis.deleteExpense);
-    dispatch(fetchExpenses()); // Reload expenses after deletion
-    return id;
+  async (expenseId, { dispatch }) => {
+    await api.delete(`${pathForUserExpensesApis.deleteExpense}/${expenseId}`);
+    dispatch(fetchExpenses()); // Refresh expenses after deletion
+    return expenseId;
   }
 );
 
-export const fetchAnalytics = createAsyncThunk(
-  "expense/fetchAnalytics",
-  async (_, { getState }) => {
-    const { userId } = getState().user;
-    const response = await axios.get("/api/analytics", { params: { userId } });
+// Fetch expense limit
+export const fetchExpenseLimit = createAsyncThunk(
+  "expense/fetchExpenseLimit",
+  async () => {
+    const response = await api.get(pathForUserExpensesApis.getExpenseLimit);
+    return response.data;
+  }
+);
+
+// Update expense limit
+export const updateExpenseLimit = createAsyncThunk(
+  "expense/updateExpenseLimit",
+  async (newLimit, { dispatch }) => {
+    const response = await api.patch(pathForUserExpensesApis.updateExpenseLimit, {
+      limit: newLimit,
+    });
+    dispatch(fetchExpenseLimit()); // Refresh limit after update
     return response.data;
   }
 );
@@ -59,22 +73,17 @@ const expenseSlice = createSlice({
       minAmount: null,
       maxAmount: null,
     },
+    totalAmount: 0,
+    monthlyLimit: 0,
+    limitWarning: false,
     analytics: {
       categorySummary: [],
       monthlySummary: [],
     },
-    monthlyLimit: 0,
-    limitWarning: false,
     status: "idle",
     error: null,
   },
   reducers: {
-    setMonthlyLimit: (state, action) => {
-      state.monthlyLimit = action.payload;
-      // Calculate limit warning
-      const totalAmount = state.expenses.reduce((sum, exp) => sum + exp.amount, 0);
-      state.limitWarning = totalAmount >= state.monthlyLimit;
-    },
     setFilters: (state, action) => {
       state.filters = action.payload;
     },
@@ -96,18 +105,23 @@ const expenseSlice = createSlice({
       .addCase(fetchExpenses.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.expenses = action.payload;
-        const totalAmount = state.expenses.reduce((sum, exp) => sum + exp.amount, 0);
-        state.limitWarning = totalAmount >= state.monthlyLimit;
+        state.totalAmount = action.payload.reduce((sum, expense) => sum + expense.amount, 0);
+        state.limitWarning = state.totalAmount >= state.monthlyLimit;
       })
       .addCase(fetchExpenses.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
       })
-      .addCase(fetchAnalytics.fulfilled, (state, action) => {
-        state.analytics = action.payload;
+      .addCase(fetchExpenseLimit.fulfilled, (state, action) => {
+        state.monthlyLimit = action.payload;
+        state.limitWarning = state.totalAmount >= state.monthlyLimit;
+      })
+      .addCase(updateExpenseLimit.fulfilled, (state, action) => {
+        state.monthlyLimit = action.payload.limit;
+        state.limitWarning = state.totalAmount >= state.monthlyLimit;
       });
   },
 });
 
-export const { setMonthlyLimit, setFilters, clearFilters } = expenseSlice.actions;
+export const { setFilters, clearFilters } = expenseSlice.actions;
 export default expenseSlice.reducer;

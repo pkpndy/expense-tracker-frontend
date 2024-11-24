@@ -7,10 +7,7 @@ import Form from "./Form";
 
 const ExpenseList = () => {
     const dispatch = useDispatch();
-    const expenses = useSelector((state) => state.expenses || []);
-    const monthlyLimit = useSelector((state) => state.monthlyLimit);
 
-    // Fetch expenses for the selected month when it changes
     useEffect(() => {
         dispatch(fetchExpenses());
     }, [dispatch]);

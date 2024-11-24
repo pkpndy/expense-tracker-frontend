@@ -36,7 +36,7 @@ const FilterDialog = ({ onApplyFilter, onResetFilters }) => {
             <button
                 onClick={() => setIsOpen(true)}
                 className="bg-slate-600 text-white px-4 py-2 rounded hover:bg-slate-800 flex items-center justify-center gap-2">
-                <span className="font-bold">Open Filters</span>
+                <span className="font-bold">Filter the expenses</span>
                 <box-icon name="filter-alt" color="white"></box-icon>
             </button>
 
