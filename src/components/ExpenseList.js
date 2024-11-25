@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { deleteExpense, fetchExpenses } from "../redux/expenseSlice";
-import ExpenseForm from "./ExpenseForm";
+import React, {useEffect } from "react";
+import { useDispatch} from "react-redux";
+import { deleteExpense, fetchAnalytics, fetchExpenseLimit, fetchExpenses } from "../redux/expenseSlice";
 import Graph from "./Graph";
 import Form from "./Form";
 
@@ -10,6 +9,8 @@ const ExpenseList = () => {
 
     useEffect(() => {
         dispatch(fetchExpenses());
+        dispatch(fetchExpenseLimit());
+        dispatch(fetchAnalytics());
     }, [dispatch]);
 
     return (

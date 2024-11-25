@@ -7,6 +7,16 @@ const CategoryEnum = {
     MISCELLANEOUS: "Miscellaneous",
 };
 
+const CategoryColors = {
+    [CategoryEnum.ESSENTIALS]: "rgb(255, 0, 255)", // Magenta
+    [CategoryEnum.LIFESTYLE]: "rgb(54, 162, 235)", // Blue
+    [CategoryEnum.FINANCIAL_COMMITMENTS]: "rgb(255, 165, 0)", // Orange
+    [CategoryEnum.EDUCATION_AND_CHILDCARE]: "rgb(0, 255, 0)", // Green
+    [CategoryEnum.OCCASIONS_AND_TRAVEL]: "rgb(255, 0, 0)", // Red
+    [CategoryEnum.MISCELLANEOUS]: "rgb(255, 255, 0)", // Yellow
+};
+
 const CategoryArray = Object.values(CategoryEnum);
 
-module.exports = { CategoryEnum, CategoryArray };
+module.exports = { CategoryEnum, CategoryArray, CategoryColors };
+

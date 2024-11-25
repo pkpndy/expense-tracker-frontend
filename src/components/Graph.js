@@ -5,6 +5,7 @@ import "./graph.css";
 import Labbels from "./Labbels";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchExpenseLimit, updateExpenseLimit } from "../redux/expenseSlice";
+import { CategoryArray, CategoryColors } from "../enums/categoryEnum";
 
 // Register required components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -13,13 +14,25 @@ export default function Graph() {
     const dispatch = useDispatch();
     const [isEditing, setIsEditing] = useState(false);
     const [newLimit, setNewLimit] = useState("");
-
-    useEffect(() => {
-        dispatch(fetchExpenseLimit());
-    }, [dispatch]);
+    
+    const config = {
+        data: {
+            labels: CategoryArray.map((cat)=> cat),
+            datasets: [
+                {
+                    label: "My First Dataset",
+                    data: [300, 50, 100, 50, 80, 70],
+                    backgroundColor: CategoryArray.map((ctgry) => CategoryColors[ctgry]),
+                    hoverOffset: 4,
+                    borderRadius: 10,
+                    spacing: 1,
+                },
+            ],
+        },
+    };
 
     const expenses = useSelector((state) => state.expenses || []);
-    const total = useSelector((state) => state.totalAmount);
+    const total = useSelector((state) => state.expense.totalAmount);
     const monthlyExpLimit = useSelector((state) => state.expense.monthlyLimit);
 
     const handleEditClick = () => {
@@ -37,46 +50,27 @@ export default function Graph() {
         setNewLimit("");
     };
 
-    const config = {
-        data: {
-            labels: ["Magenta", "Blue", "Orange", "Green", "Red", "Yellow"],
-            datasets: [
-                {
-                    label: "My First Dataset",
-                    data: [300, 50, 100, 50, 80, 70],
-                    backgroundColor: [
-                        "rgb(255, 0, 255)",
-                        "rgb(54, 162, 235)",
-                        "rgb(255, 165, 0)",
-                        "rgb(0, 255, 0)",
-                        "rgb(255, 0, 0)",
-                        "rgb(255, 255, 0)",
-                    ],
-                    hoverOffset: 4,
-                    borderRadius: 10,
-                    spacing: 1,
-                },
-            ],
-        },
-    };
-
     return (
         <div className="flex justify-content max-w-xs mx-auto">
             <div className="item">
-                <div className="chart relative">
-                    <Doughnut {...config} />
+                <div className="chart-container">
+                    <div className="chart relative">
+                        <Doughnut {...config} />
+                    </div>
                     <h3 className="mb-4 font-bold title">
                         Total:
                         <span className="block text-3xl text-emrald-400">
-                        {total !== undefined ? total : "0"}$
+                            {total !== undefined ? total : "0"}$
                         </span>
                     </h3>
+                </div>
+                <div className="labels-container">
                     <h2 className="mb-4 font-bold title flex items-center gap-2">
                         Expense Limit:
                         {isEditing ? (
                             <div className="flex items-center gap-2">
                                 <input
-                                    type="text"
+                                    type="Number"
                                     className="border rounded px-2 py-1 w-20 text-center"
                                     value={newLimit}
                                     onChange={(e) => setNewLimit(e.target.value)}
@@ -105,18 +99,16 @@ export default function Graph() {
                                     title="Edit"
                                 ></box-icon>
                                 <span className="block text-3xl text-emrald-400">
-                                {monthlyExpLimit !== undefined ? monthlyExpLimit : "0"}$
+                                    {monthlyExpLimit !== undefined ? monthlyExpLimit : "0"}$
                                 </span>
                             </>
                         )}
                     </h2>
-                </div>
-
-                <div className="flex flex-col py-10 gap-4">
                     {/* Labels */}
                     <Labbels />
                 </div>
             </div>
         </div>
     );
+    
 }

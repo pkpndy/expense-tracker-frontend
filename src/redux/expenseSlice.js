@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../api/api";
 import { pathForUserExpensesApis } from "../api/expenseTracker.api";
 
-// Fetch all expenses
 export const fetchExpenses = createAsyncThunk(
   "expense/fetchExpenses",
   async (filters) => {
@@ -11,7 +10,19 @@ export const fetchExpenses = createAsyncThunk(
   }
 );
 
-// Add new expense
+export const fetchFilteredExpenses = createAsyncThunk(
+  "expense/fetchFilteredExpenses",
+  async (filters) => {
+      const queryString = Object.keys(filters)
+          .filter((key) => filters[key]) // Ignore empty values
+          .map((key) => `${key}=${encodeURIComponent(filters[key])}`)
+          .join("&");
+
+      const response = await api.get(`/api/expenses?${queryString}`);
+      return response.data;
+  }
+);
+
 export const addExpense = createAsyncThunk(
   "expense/addExpense",
   async (expenseData, { dispatch }) => {
@@ -21,7 +32,6 @@ export const addExpense = createAsyncThunk(
   }
 );
 
-// Update existing expense
 export const updateExpense = createAsyncThunk(
   "expense/updateExpense",
   async (expenseData, { dispatch }) => {
@@ -31,7 +41,6 @@ export const updateExpense = createAsyncThunk(
   }
 );
 
-// Delete an expense
 export const deleteExpense = createAsyncThunk(
   "expense/deleteExpense",
   async (expenseId, { dispatch }) => {
@@ -41,7 +50,6 @@ export const deleteExpense = createAsyncThunk(
   }
 );
 
-// Fetch expense limit
 export const fetchExpenseLimit = createAsyncThunk(
   "expense/fetchExpenseLimit",
   async () => {
@@ -50,7 +58,6 @@ export const fetchExpenseLimit = createAsyncThunk(
   }
 );
 
-// Update expense limit
 export const updateExpenseLimit = createAsyncThunk(
   "expense/updateExpenseLimit",
   async (newLimit, { dispatch }) => {
@@ -58,6 +65,14 @@ export const updateExpenseLimit = createAsyncThunk(
       limit: newLimit,
     });
     dispatch(fetchExpenseLimit()); // Refresh limit after update
+    return response.data;
+  }
+);
+
+export const fetchAnalytics = createAsyncThunk(
+  "expense/fetchAnalytics",
+  async () => {
+    const response = await api.get(pathForUserExpensesApis.getExpenseAnalytics);
     return response.data;
   }
 );
@@ -119,9 +134,25 @@ const expenseSlice = createSlice({
       .addCase(updateExpenseLimit.fulfilled, (state, action) => {
         state.monthlyLimit = action.payload.limit;
         state.limitWarning = state.totalAmount >= state.monthlyLimit;
+      })
+      .addCase(fetchAnalytics.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchAnalytics.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        console.log(action.payload);
+        state.analytics = {
+          categorySummary: action.payload.categorySummary,
+          monthlySummary: action.payload.monthlySummary,
+        };
+      })
+      .addCase(fetchAnalytics.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
       });
   },
 });
+
 
 export const { setFilters, clearFilters } = expenseSlice.actions;
 export default expenseSlice.reducer;

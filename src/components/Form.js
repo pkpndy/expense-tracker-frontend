@@ -15,7 +15,14 @@ export default function Form() {
     const dispatch = useDispatch();
 
     const onSubmit = (data) => {
-        dispatch(addExpense(data));
+        const formattedData = {
+            ...data,
+            amount: parseInt(data.amount),
+        };
+        dispatch(addExpense(formattedData));
+        resetField("name");
+        resetField("category");
+        resetField("amount");
     };
 
     return (
@@ -37,14 +44,14 @@ export default function Form() {
                             Select Category
                         </option>
                         {CategoryArray.map((category, index) => (
-                            <option key={index} value={category} >
+                            <option key={index} value={category}>
                                 {category}
                             </option>
                         ))}
                     </select>
                     <div className="input-group">
                         <input
-                            type="text"
+                            type="Number"
                             placeholder="Amount"
                             {...register("amount")}
                             className="form-input"

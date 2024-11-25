@@ -5,9 +5,7 @@ import Signup from './components/Auth/Signup';
 import Login from './components/Auth/Login';
 import { checkAuth } from './redux/authSlice';
 import ProtectedRoute from './components/ProtectedRoute';
-import ExpenseForm from './components/ExpenseForm';
 import ExpenseList from './components/ExpenseList';
-import Analytics from './components/Analytics';
 import './App.css';
 
 function App() {
@@ -31,9 +29,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-           <Route path="/add" element={<ExpenseForm />} />
           <Route path="/list" element={<ExpenseList />} />
-          <Route path="/analytics" element={<Analytics />} />
         </Routes>
       </div>
     </Router>

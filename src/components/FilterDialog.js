@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import "boxicons";
+import { useDispatch } from "react-redux";
+import { fetchFilteredExpenses } from "../redux/expenseSlice";
 
-const FilterDialog = ({ onApplyFilter, onResetFilters }) => {
+const FilterDialog = () => {
+    const dispatch = useDispatch();
     const [isOpen, setIsOpen] = useState(false);
     const [filters, setFilters] = useState({
         category: "",
@@ -23,13 +26,26 @@ const FilterDialog = ({ onApplyFilter, onResetFilters }) => {
             minAmount: "",
             maxAmount: "",
         });
-        onResetFilters();
+    
     };
 
     const handleApply = () => {
+        if (filters.startDate > filters.endDate) {
+            alert("Start date cannot be after the end date!");
+            return;
+        }
+        if (Number(filters.minAmount) > Number(filters.maxAmount)) {
+            alert("Min Amount cannot exceed Max Amount!");
+            return;
+        }
         onApplyFilter(filters);
         setIsOpen(false);
     };
+    
+
+    const onApplyFilter = (filters) => {
+        dispatch(fetchFilteredExpenses(filters));
+    };    
 
     return (
         <>
