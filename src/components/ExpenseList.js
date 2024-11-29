@@ -10,7 +10,6 @@ const ExpenseList = () => {
     useEffect(() => {
         dispatch(fetchExpenses());
         dispatch(fetchExpenseLimit());
-        dispatch(fetchAnalytics());
     }, [dispatch]);
 
     return (
